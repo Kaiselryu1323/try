@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Our Jigsaw Puzzle 💖</title>
+  <style>
+    body {
+      background: #fff0f6;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #ff4081;
+    }
+    #board {
+      display: grid;
+      margin: 20px auto;
+      gap: 2px;
+      border: 4px solid #ff80ab;
+      border-radius: 12px;
+      background: #ffccde;
+    }
+    .slot {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ff80ab;
+      background: white;
+    }
+    .piece {
+      width: 100px;
+      height: 100px;
+      cursor: grab;
+    }
+    #pieces {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff80ab;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff4081;
+    }
+  </style>
+</head>
+<body>
+  <h1>💞 Our Special Jigsaw 💞</h1>
+  <div id="board"></div>
+  <div id="pieces"></div>
+  <button onclick="shufflePieces()">Shuffle Again 🔄</button>
+
+  <script>
+    const rows = 3;
+    const cols = 3;
+    const board = document.getElementById("board");
+    const piecesContainer = document.getElementById("pieces");
+
+    board.style.gridTemplateColumns = `repeat(${cols}, 100px)`;
+    board.style.gridTemplateRows = `repeat(${rows}, 100px)`;
+
+    let pieces = [];
+
+    function createPieces() {
+      let img = new Image();
+      img.src = "photo.jpg"; // replace with your image
+      img.onload = () => {
+        pieces = [];
+        piecesContainer.innerHTML = "";
+        board.innerHTML = "";
+
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            // Create puzzle slot
+            let slot = document.createElement("div");
+            slot.classList.add("slot");
+            slot.dataset.correctX = x;
+            slot.dataset.correctY = y;
+            slot.addEventListener("dragover", e => e.preventDefault());
+            slot.addEventListener("drop", dropPiece);
+            board.appendChild(slot);
+
+            // Create puzzle piece
+            let piece = document.createElement("canvas");
+            piece.width = 100;
+            piece.height = 100;
+            piece.classList.add("piece");
+            let ctx = piece.getContext("2d");
+            ctx.drawImage(
+              img,
+              x * img.width / cols,
+              y * img.height / rows,
+              img.width / cols,
+              img.height / rows,
+              0, 0,
+              100, 100
+            );
+            piece.draggable = true;
+            piece.dataset.x = x;
+            piece.dataset.y = y;
+            piece.addEventListener("dragstart", dragPiece);
+            pieces.push(piece);
+          }
+        }
+        shufflePieces();
+      };
+    }
+
+    function shufflePieces() {
+      piecesContainer.innerHTML = "";
+      let shuffled = [...pieces].sort(() => Math.random() - 0.5);
+      shuffled.forEach(p => piecesContainer.appendChild(p));
+    }
+
+    function dragPiece(e) {
+      e.dataTransfer.setData("x", e.target.dataset.x);
+      e.dataTransfer.setData("y", e.target.dataset.y);
+      e.dataTransfer.setData("id", pieces.indexOf(e.target));
+    }
+
+    function dropPiece(e) {
+      let x = e.dataTransfer.getData("x");
+      let y = e.dataTransfer.getData("y");
+      let id = e.dataTransfer.getData("id");
+      let piece = pieces[id];
+
+      if (this.children.length === 0 &&
+          this.dataset.correctX == x &&
+          this.dataset.correctY == y) {
+        this.appendChild(piece);
+        checkWin();
+      }
+    }
+
+    function checkWin() {
+      let slots = document.querySelectorAll(".slot");
+      for (let slot of slots) {
+        if (slot.children.length === 0) return;
+      }
+      setTimeout(() => alert("🎉 You solved the puzzle! 💕"), 100);
+    }
+
+    createPieces();
+  </script>
+</body>
+</html>
